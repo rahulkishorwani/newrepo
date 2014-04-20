@@ -1,7 +1,7 @@
 package raft
 
 import (
-	cluster "github.com/pebbe/cluster"
+	cluster "github.com/prabhat-bajpai/kvstore-public/tree/master/raft/cluster"
 	"strconv"
 	s "strings"
 	"time"

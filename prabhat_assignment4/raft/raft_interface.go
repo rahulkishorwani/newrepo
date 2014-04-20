@@ -1,6 +1,6 @@
 package raft
 
-import cluster "github.com/pebbe/cluster"
+import 	cluster "github.com/prabhat-bajpai/kvstore-public/tree/master/raft/cluster"
 
 // This is methods supported by Raft object
 type Raft interface {

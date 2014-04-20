@@ -1,6 +1,6 @@
 package raft
 
-import cluster "github.com/pebbe/cluster"
+import 	cluster "github.com/prabhat-bajpai/kvstore-public/tree/master/raft/cluster"
 
 // Identifies an entry in the log
 type LogEntry struct {

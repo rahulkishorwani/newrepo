@@ -58,7 +58,6 @@ func send(msg string, requester_C *zmq.Socket) string {
 		return "0"
 	} else {
 	}
-	fmt.Println(phase)
 	return phase
 }
 

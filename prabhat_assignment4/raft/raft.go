@@ -1,10 +1,10 @@
 package raft
 
 import (
-	cluster "github.com/pebbe/cluster"
-	"time"
-	s "strings"
 	"fmt"
+	cluster "github.com/pebbe/cluster"
+	s "strings"
+	"time"
 )
 
 // This methord take care of receive msg from other raft servers
@@ -29,7 +29,7 @@ func receive_m() {
 			msg := envelope.Msg.(cluster.AppendEntries)
 			if term >= server.Get_Term() {
 				heartbeat_interm <- msg.Term
-				
+
 				server.leaderId = msg.LeaderId
 				if msg.PrevLogIndex > server.lastLogIndex {
 					server.Outbox() <- &cluster.Envelope{Pid: envelope.Pid, M_type: APPEND_RES, Msg: cluster.AppendResponse{Term: server.currentTerm, Id: server.Id, LastLogIndex: server.lastLogIndex, LastLogTerm: server.lastLogTerm, Success: false}}
@@ -40,11 +40,11 @@ func receive_m() {
 						for {
 							if msg.Entries[index] != "" {
 								if server.logEntry[index] != "" {
-// If leader is changed in between then this will tell the client to redirect to new leader
-								
-									reply := "0 "+ s.Split(server.logEntry[index], " ")[1] +" "+ fmt.Sprintf("%d", server.leaderId)
+									// If leader is changed in between then this will tell the client to redirect to new leader
+
+									reply := "0 " + s.Split(server.logEntry[index], " ")[1] + " " + fmt.Sprintf("%d", server.leaderId)
 									responder.Send(reply, 0)
-								} 
+								}
 								server.logEntry[index] = msg.Entries[index]
 								index = index + 1
 							} else {
@@ -61,7 +61,7 @@ func receive_m() {
 						server.Outbox() <- &cluster.Envelope{Pid: envelope.Pid, M_type: APPEND_RES, Msg: cluster.AppendResponse{Term: server.currentTerm, Id: server.Id, LastLogIndex: server.lastLogIndex, LastLogTerm: server.lastLogTerm, Success: false}}
 					}
 				}
-			} else {	
+			} else {
 				server.Outbox() <- &cluster.Envelope{Pid: envelope.Pid, M_type: APPEND_RES, Msg: cluster.AppendResponse{Term: server.currentTerm, Id: server.Id, LastLogIndex: server.lastLogIndex, LastLogTerm: server.lastLogTerm, Success: false}}
 				continue
 			}
@@ -74,7 +74,7 @@ func receive_m() {
 			case <-timer1.C:
 			}
 			success[envelope.Pid-1] <- true
-			
+
 			msg := envelope.Msg.(cluster.AppendResponse)
 			if msg.Success == false {
 				if msg.Term > server.Get_Term() {
@@ -196,9 +196,9 @@ func send_m() {
 				server.leader = true
 				phase = LEADER
 				server.leaderId = server.Id
-				for i:=0;i<len(server.nextIndex);i++{
-					server.nextIndex[i]=server.lastLogIndex + 1
-					server.matchIndex[i]=0
+				for i := 0; i < len(server.nextIndex); i++ {
+					server.nextIndex[i] = server.lastLogIndex + 1
+					server.matchIndex[i] = 0
 				}
 				done <- true
 			case <-timer1.C:

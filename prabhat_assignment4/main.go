@@ -1,7 +1,7 @@
 package main
 
 import (
-	raft "github.com/pebbe/raft"
+	raft "github.com/rahulkishorwani/newrepo/tree/master/prabhat_assignment4/raft"
 	"os"
 	"strconv"
 )

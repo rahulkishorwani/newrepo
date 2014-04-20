@@ -31,34 +31,36 @@ func receive_m() {
 				heartbeat_interm <- msg.Term
 
 				server.leaderId = msg.LeaderId
-				if msg.PrevLogIndex > server.lastLogIndex {
-					server.Outbox() <- &cluster.Envelope{Pid: envelope.Pid, M_type: APPEND_RES, Msg: cluster.AppendResponse{Term: server.currentTerm, Id: server.Id, LastLogIndex: server.lastLogIndex, LastLogTerm: server.lastLogTerm, Success: false}}
-				} else {
-					entryTerm := Index_to_Term(msg.PrevLogIndex)
-					if entryTerm == msg.PrevLogTerm {
-						index := msg.PrevLogIndex + 1
-						for {
-							if msg.Entries[index] != "" {
-								if server.logEntry[index] != "" {
-									// If leader is changed in between then this will tell the client to redirect to new leader
-
-									reply := "0 " + s.Split(server.logEntry[index], " ")[1] + " " + fmt.Sprintf("%d", server.leaderId)
-									responder.Send(reply, 0)
-								}
-								server.logEntry[index] = msg.Entries[index]
-								index = index + 1
-							} else {
-								break
-							}
-						}
-						server.lastLogIndex = index - 1
-						server.lastLogTerm = Index_to_Term(server.lastLogIndex)
-						server.Outbox() <- &cluster.Envelope{Pid: envelope.Pid, M_type: APPEND_RES, Msg: cluster.AppendResponse{Term: server.currentTerm, Id: server.Id, LastLogIndex: server.lastLogIndex, LastLogTerm: server.lastLogTerm, Success: true}}
-						if server.lastLogIndex >= msg.LeaderCommit {
-							server.commitIndex = msg.LeaderCommit
-						}
-					} else {
+				if msg.Entries[msg.PrevLogIndex+1] == "" {
+					if msg.PrevLogIndex > server.lastLogIndex {
 						server.Outbox() <- &cluster.Envelope{Pid: envelope.Pid, M_type: APPEND_RES, Msg: cluster.AppendResponse{Term: server.currentTerm, Id: server.Id, LastLogIndex: server.lastLogIndex, LastLogTerm: server.lastLogTerm, Success: false}}
+					} else {
+						entryTerm := Index_to_Term(msg.PrevLogIndex)
+						if entryTerm == msg.PrevLogTerm {
+							index := msg.PrevLogIndex + 1
+							for {
+								if msg.Entries[index] != "" {
+									if server.logEntry[index] != "" {
+										// If leader is changed in between then this will tell the client to redirect to new leader
+
+										reply := "0 " + s.Split(server.logEntry[index], " ")[1] + " " + fmt.Sprintf("%d", server.leaderId)
+										responder.Send(reply, 0)
+									}
+									server.logEntry[index] = msg.Entries[index]
+									index = index + 1
+								} else {
+									break
+								}
+							}
+							server.lastLogIndex = index - 1
+							server.lastLogTerm = Index_to_Term(server.lastLogIndex)
+							server.Outbox() <- &cluster.Envelope{Pid: envelope.Pid, M_type: APPEND_RES, Msg: cluster.AppendResponse{Term: server.currentTerm, Id: server.Id, LastLogIndex: server.lastLogIndex, LastLogTerm: server.lastLogTerm, Success: true}}
+							if server.lastLogIndex >= msg.LeaderCommit {
+								server.commitIndex = msg.LeaderCommit
+							}
+						} else {
+							server.Outbox() <- &cluster.Envelope{Pid: envelope.Pid, M_type: APPEND_RES, Msg: cluster.AppendResponse{Term: server.currentTerm, Id: server.Id, LastLogIndex: server.lastLogIndex, LastLogTerm: server.lastLogTerm, Success: false}}
+						}
 					}
 				}
 			} else {
